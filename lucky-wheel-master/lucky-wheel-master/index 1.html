@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vòng Quay May Mắn</title>
+    <link rel="stylesheet" href="css/typo/typo.css" />
+    <link rel="stylesheet" href="css/hc-canvas-luckwheel.css" />
+    <style>
+      .hc-luckywheel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-top: -250px;
+        margin-left: -250px;
+      }
+    </style>
+  </head>
+  <body class="bg">
+    <div class="wrapper typo" id="wrapper">
+      <section id="luckywheel" class="hc-luckywheel">
+        <div class="hc-luckywheel-container">
+          <canvas class="hc-luckywheel-canvas" width="500px" height="500px">
+            Vòng Quay May Mắn
+          </canvas>
+        </div>
+        <a class="hc-luckywheel-btn" href="javascript:;" onclick="playSound('votay')">Quay</a>
+      </section>
+    </div>
+
+    <audio id="votay" src="sound/dangquay.mp3"></audio>
+    <audio id="matluot" src="sound/matluot.mp3"></audio>
+    <audio id="dangquay" src="sound/votay.mp3"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="js/hc-canvas-luckwheel.js"></script>
+    <script>
+      var isPercentage = true;
+      var prizes = [
+        {
+          text: "Đồng Hồ",
+          img: "images/dongho.png",
+          number: 1, // 1%,
+          percentpage: 0.01, // 1%
+        },
+        {
+          text: "Nước Ngọt",
+          img: "images/nuoc ngot.png",
+          number: 1,
+          percentpage: 0.3, // 30%
+        },
+        {
+          text: "Ô Tô",
+          img: "images/oto.png",
+          number: 1,
+          percentpage: 0.2, // 20%
+        },
+        {
+          text: "Kẹo Mút",
+          img: "images/keo mut.png",
+          number: 1,
+          percentpage: 0.4, // 40%
+        },
+        {
+          text: "Chúc bạn may mắn lần sau",
+          img: "images/miss.png",
+          percentpage: 0.6, // 60%
+        },
+      ];
+
+      function playSound(soundId) {
+        var audio = document.getElementById(soundId);
+        audio.play();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+  hcLuckywheel.init({
+    id: "luckywheel",
+    config: function (callback) {
+      callback && callback(prizes);
+    },
+    mode: "both",
+    getPrize: function (callback) {
+      var rand = randomIndex(prizes);
+      var chances = rand;
+      callback && callback([rand, chances]);
+    },
+    gotBack: function (data) {
+      if (data == null) {
+        Swal.fire("Chương trình kết thúc", "Đã hết phần thưởng", "error");
+      } else if (data == "Chúc bạn may mắn lần sau") {
+        Swal.fire("Bạn không trúng thưởng", data, "error");
+        playSound("matluot");
+      } else {
+        Swal.fire("Chúc mừng bạn đã trúng", data, "success").then(function () {
+          //playSound("dangquay");
+        });
+      }
+    },
+    startSpin: function () {
+      playSound("dangquay");
+    },
+  });
+});
+
+function randomIndex(prizes) {
+  if (isPercentage) {
+    var counter = 1;
+    for (let i = 0; i < prizes.length; i++) {
+      if (prizes[i].number == 0) {
+        counter++;
+      }
+    }
+    if (counter == prizes.length) {
+      return null;
+    }
+    let rand = Math.random();
+    let prizeIndex = null;
+    console.log(rand);
+    switch (true) {
+      case rand < prizes[0].percentpage:
+        prizeIndex = 0;
+        break;
+      case rand < prizes[0].percentpage + prizes[1].percentpage:
+        prizeIndex = 1;
+        break;
+      case rand < prizes[0].percentpage + prizes[1].percentpage + prizes[2].percentpage:
+        prizeIndex = 2;
+        break;
+      case rand < prizes[0].percentpage + prizes[1].percentpage + prizes[2].percentpage + prizes[3].percentpage:
+        prizeIndex = 3;
+        break;
+      default:
+        prizeIndex = 4;
+        break;
+    }
+    if (prizes[prizeIndex].number == 0) {
+      return randomIndex(prizes);
+    }
+    prizes[prizeIndex].number = prizes[prizeIndex].number - 1;
+    return prizeIndex;
+  } else {
+    let rand = Math.floor(Math.random() * prizes.length);
+    if (prizes[rand].number == 0) {
+      return randomIndex(prizes);
+    }
+    prizes[rand].number = prizes[rand].number - 1;
+    return rand;
+  }
+}
+
+function playSound(soundId) {
+  var audio = document.getElementById(soundId);
+  audio.play();
+}
+    </script>
+  </body>
+</html>
